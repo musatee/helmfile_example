@@ -16,4 +16,4 @@ service:
   ports:
     targetPort: 8085
     port: 80
-    
+   
