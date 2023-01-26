@@ -1,0 +1,14 @@
+releases:
+- name: capp 
+  chart: ./my-helmchart
+  values: 
+  - ./my-helmchart/capp-values.yaml
+  set: 
+  - name: deploy_to_prod.create
+    value: true 
+  - name: deployment.image.tag
+    value: 21 
+# - name: capp2
+#   chart: ./my-helmchart
+#   values: 
+#   - ./my-helmchart/capp-values.yaml
