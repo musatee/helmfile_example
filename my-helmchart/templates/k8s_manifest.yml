@@ -1,3 +1,13 @@
+# create namespace as per environment
+apiVersion: v1
+kind: Namespace
+metadata:
+{{- if .Values.deploy_to_prod.create }}
+  name: {{ .Release.Name }}-prod
+{{- else }}
+  name: {{ .Release.Name }}-dev
+{{- end }}
+
 --- 
 # create Docker hub secret
 apiVersion: v1
@@ -5,42 +15,28 @@ data:
   .dockerconfigjson: eyJhdXRocyI6eyJodHRwczovL2luZGV4LmRvY2tlci5pby92MS8iOnsidXNlcm5hbWUiOiJtdXNhdGVlMTEiLCJwYXNzd29yZCI6Im11c2F0ZWUxMSIsImVtYWlsIjoibXVzYS5oc3R1MTFAZ21haWwuY29tIiwiYXV0aCI6ImJYVnpZWFJsWlRFeE9tMTFjMkYwWldVeE1RPT0ifX19
 kind: Secret
 metadata:
+  name: {{ .Release.Name }}
 {{- if .Values.deploy_to_prod.create }}
-  name: {{ .Release.Name }}-prod
   namespace: {{ .Release.Name }}-prod
 {{- else }}
-  name: {{ .Release.Name }}-dev
   namespace: {{ .Release.Name }}-dev
 {{- end }}
 type: kubernetes.io/dockerconfigjson
 
 --- 
 
-# create namespace as per environment
-apiVersion: v1
-kind: Namespace
-metadata:
-  creationTimestamp: null
-{{- if .Values.deploy_to_prod.create }}
-  name: {{ .Release.Name }}-prod
-{{- else }}
-  name: {{ .Release.Name }}-dev
-{{- end }}
----
-
 # Create Deployment
 apiVersion: apps/v1
 kind: Deployment
 metadata: 
+  name: {{ .Release.Name }}
 {{- if .Values.deploy_to_prod.create }}
-  name: {{ .Release.Name }}-prod
   namespace: {{ .Release.Name }}-prod
 {{- else }}
-  name: {{ .Release.Name }}-dev
   namespace: {{ .Release.Name }}-dev
 {{- end }}
 spec: 
-  replicas: {{ .Values.deployment.replicas }}
+  replicas: {{ .Values.deployment.replicas | default 2 }}
   strategy:
     rollingUpdate:
       maxSurge: 1
@@ -68,23 +64,17 @@ spec:
           - containerPort: {{ .containerPort }}
           {{- end }}
       imagePullSecrets:
-      {{- if .Values.deploy_to_prod.create }}
-      - name: {{ .Release.Name }}-prod
-      {{- else }}
-      - name: {{ .Release.Name }}-dev
-      {{- end }}
-
+      - name: {{ .Release.Name }}
 --- 
 
 # Create service 
 apiVersion: v1 
 kind: Service   
 metadata: 
+  name: {{ .Release.Name }}
 {{- if .Values.deploy_to_prod.create }}
-  name: {{ .Release.Name }}-prod
   namespace: {{ .Release.Name }}-prod
 {{- else }}
-  name: {{ .Release.Name }}-dev
   namespace: {{ .Release.Name }}-dev
 {{- end }}
 spec: 
